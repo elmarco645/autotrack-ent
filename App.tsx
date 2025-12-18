@@ -11,14 +11,110 @@ const INITIAL_VEHICLES: Vehicle[] = [
   {
     id: '1',
     plate: 'KAB123X',
-    vin: 'VIN00123',
+    vin: 'VIN00123998',
     type: 'Car',
     model: 'Toyota Corolla',
     year: '2020',
     color: 'White',
     owner: 'John Doe',
-    history: 'Minor scratch repaired',
+    history: 'Minor scratch repaired in 2022. Regular service maintained.',
+    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString()
+  },
+  {
+    id: '2',
+    plate: 'ZDA990W',
+    vin: 'VLV99822100',
+    type: 'Truck',
+    model: 'Volvo FH16',
+    year: '2021',
+    color: 'Deep Blue',
+    owner: 'Global Logistics Ltd',
+    history: 'Heavy duty usage. Engine overhaul performed at 150k miles.',
+    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString()
+  },
+  {
+    id: '3',
+    plate: 'MTR442S',
+    vin: 'YAM77211054',
+    type: 'Motorcycle',
+    model: 'Yamaha MT-07',
+    year: '2022',
+    color: 'Tech Black',
+    owner: 'Sarah Miller',
+    history: 'Mint condition. Custom exhaust fitted.',
+    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString()
+  },
+  {
+    id: '4',
+    plate: 'BUS555K',
+    vin: 'MBZ11223344',
+    type: 'Bus',
+    model: 'Mercedes-Benz Tourismo',
+    year: '2019',
+    color: 'Silver',
+    owner: 'City Transit Authority',
+    history: 'Used for long-distance regional travel. Brake pads replaced last month.',
+    lastUpdated: new Date(Date.now() - 1000 * 60 * 30).toISOString()
+  },
+  {
+    id: '5',
+    plate: 'ELV101E',
+    vin: 'TSL55433211',
+    type: 'Car',
+    model: 'Tesla Model 3',
+    year: '2023',
+    color: 'Pearl White',
+    owner: 'Kevin Zhang',
+    history: 'New registration. Full self-driving package enabled.',
     lastUpdated: new Date().toISOString()
+  },
+  {
+    id: '6',
+    plate: 'HGV778L',
+    vin: 'SCN88776655',
+    type: 'Truck',
+    model: 'Scania R500',
+    year: '2018',
+    color: 'Red',
+    owner: 'Road Haulers Co.',
+    history: 'Transmission issues reported in 2023, now resolved.',
+    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString()
+  },
+  {
+    id: '7',
+    plate: 'SPD202B',
+    vin: 'DCT44556677',
+    type: 'Motorcycle',
+    model: 'Ducati Panigale V4',
+    year: '2023',
+    color: 'Rosso Corsa',
+    owner: 'Marco Rossi',
+    history: 'Track use only. High performance maintenance schedule.',
+    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString()
+  },
+  {
+    id: '8',
+    plate: 'CTY889G',
+    vin: 'VLV22334455',
+    type: 'Bus',
+    model: 'Volvo B8RLE',
+    year: '2020',
+    color: 'Green/White',
+    owner: 'EcoBus Services',
+    history: 'Electric-hybrid conversion candidate.',
+    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString()
+  },
+  {
+    id: '9',
+    plate: 'OLD554J',
+    vin: 'FRD19670012',
+    type: 'Car',
+    model: 'Ford Mustang',
+    year: '1967',
+    color: 'Highland Green',
+    owner: 'Classic Car Club',
+    history: 'Full restoration completed in 2015. Museum quality.',
+    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString()
   }
 ];
 

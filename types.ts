@@ -9,6 +9,7 @@ export interface Vehicle {
   color: string;
   owner: string;
   history: string;
+  image?: string; // Base64 encoded image string
   lastUpdated?: string;
 }
 

@@ -24,7 +24,7 @@ const Search: React.FC<SearchProps> = ({ onSearch, setView, onEdit }) => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-in slide-in-from-bottom duration-500">
+    <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-bottom duration-500 pb-12">
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-200 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-5">
            <i className="fa-solid fa-magnifying-glass text-9xl"></i>
@@ -86,46 +86,66 @@ const Search: React.FC<SearchProps> = ({ onSearch, setView, onEdit }) => {
       )}
 
       {result && result !== 'notfound' && (
-        <div className="bg-white p-10 rounded-3xl shadow-2xl border-2 border-blue-500 relative animate-in zoom-in duration-300">
-          <div className="absolute top-10 right-10 flex space-x-3">
+        <div className="bg-white rounded-3xl shadow-2xl border-2 border-blue-500 overflow-hidden relative animate-in zoom-in duration-300">
+          {/* Action Header */}
+          <div className="absolute top-6 right-6 flex space-x-3 z-20">
             <button 
               onClick={() => onEdit(result)}
-              className="bg-blue-50 text-blue-600 w-12 h-12 rounded-xl flex items-center justify-center hover:bg-blue-100 transition-colors"
+              className="bg-white/90 backdrop-blur shadow-lg text-blue-600 w-12 h-12 rounded-xl flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all"
               title="Edit Record"
             >
               <i className="fa-solid fa-pen"></i>
             </button>
-            <button className="bg-slate-50 text-slate-400 w-12 h-12 rounded-xl flex items-center justify-center hover:bg-slate-100 transition-colors">
+            <button className="bg-white/90 backdrop-blur shadow-lg text-slate-400 w-12 h-12 rounded-xl flex items-center justify-center hover:bg-slate-100 transition-all">
               <i className="fa-solid fa-print"></i>
             </button>
           </div>
 
-          <div className="mb-10">
-            <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-widest mb-4 inline-block">Secure Verified Asset</span>
-            <h3 className="text-6xl font-black text-slate-900 tracking-tighter font-mono">{result.plate}</h3>
-            <p className="text-slate-400 mt-2 font-medium flex items-center">
-              <i className="fa-solid fa-clock mr-2"></i>
-              Last activity: {new Date(result.lastUpdated || '').toLocaleString()}
-            </p>
-          </div>
+          <div className="flex flex-col lg:flex-row">
+            {/* Image Section */}
+            <div className="w-full lg:w-2/5 relative bg-slate-900 aspect-video lg:aspect-auto min-h-[300px]">
+              {result.image ? (
+                <img src={result.image} alt={result.model} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-slate-700">
+                   <i className={`fa-solid ${getIconForType(result.type)} text-8xl opacity-10 mb-4`}></i>
+                   <p className="text-xs uppercase font-black tracking-widest opacity-40">No Photo Available</p>
+                </div>
+              )}
+              <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-slate-950 to-transparent">
+                 <span className="text-[10px] font-black text-white bg-blue-600 px-3 py-1 rounded-full uppercase tracking-widest mb-2 inline-block">Secure Verified Asset</span>
+                 <h3 className="text-5xl font-black text-white tracking-tighter font-mono">{result.plate}</h3>
+              </div>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <DetailBox label="Manufacturer & Model" value={result.model} icon="fa-car" />
-            <DetailBox label="VIN Identification" value={result.vin} icon="fa-fingerprint" />
-            <DetailBox label="Registered Owner" value={result.owner} icon="fa-user-check" />
-            <DetailBox label="Body Type" value={result.type} icon="fa-truck-pickup" />
-            <DetailBox label="Year of Make" value={result.year} icon="fa-calendar-day" />
-            <DetailBox label="Visual Palette" value={result.color} icon="fa-paint-brush" />
-          </div>
+            {/* Content Section */}
+            <div className="flex-1 p-8 lg:p-12">
+              <div className="mb-8">
+                <p className="text-slate-400 font-medium flex items-center text-sm">
+                  <i className="fa-solid fa-clock mr-2 text-blue-400"></i>
+                  Last Activity Logged: {new Date(result.lastUpdated || '').toLocaleString()}
+                </p>
+              </div>
 
-          <div className="mt-12 p-8 bg-slate-50 rounded-3xl border border-slate-100">
-            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center">
-              <i className="fa-solid fa-scroll mr-2"></i>
-              Asset Narrative & History
-            </h4>
-            <p className="text-slate-700 font-medium leading-relaxed italic">
-              "{result.history || 'No significant history recorded for this asset.'}"
-            </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <DetailBox label="Manufacturer & Model" value={result.model} icon="fa-car" />
+                <DetailBox label="VIN Identification" value={result.vin} icon="fa-fingerprint" />
+                <DetailBox label="Registered Owner" value={result.owner} icon="fa-user-check" />
+                <DetailBox label="Body Type" value={result.type} icon="fa-truck-pickup" />
+                <DetailBox label="Year of Make" value={result.year} icon="fa-calendar-day" />
+                <DetailBox label="Visual Palette" value={result.color} icon="fa-paint-brush" />
+              </div>
+
+              <div className="mt-8 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center">
+                  <i className="fa-solid fa-scroll mr-2"></i>
+                  Asset Narrative & History
+                </h4>
+                <p className="text-slate-700 font-medium leading-relaxed italic text-sm">
+                  "{result.history || 'No significant history recorded for this asset.'}"
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -133,13 +153,23 @@ const Search: React.FC<SearchProps> = ({ onSearch, setView, onEdit }) => {
   );
 };
 
+const getIconForType = (type: string) => {
+  switch(type) {
+    case 'Car': return 'fa-car';
+    case 'Truck': return 'fa-truck';
+    case 'Motorcycle': return 'fa-motorcycle';
+    case 'Bus': return 'fa-bus';
+    default: return 'fa-car-side';
+  }
+};
+
 const DetailBox: React.FC<{ label: string; value: string; icon: string }> = ({ label, value, icon }) => (
-  <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 group hover:border-blue-200 hover:bg-blue-50/30 transition-all">
-    <div className="flex items-center text-slate-400 mb-2 group-hover:text-blue-500 transition-colors">
-      <i className={`fa-solid ${icon} text-xs mr-2`}></i>
-      <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
+  <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100 group hover:border-blue-200 hover:bg-blue-50/30 transition-all">
+    <div className="flex items-center text-slate-400 mb-1 group-hover:text-blue-500 transition-colors">
+      <i className={`fa-solid ${icon} text-[10px] mr-2`}></i>
+      <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
     </div>
-    <p className="text-slate-800 font-black text-lg truncate" title={value}>{value}</p>
+    <p className="text-slate-800 font-black text-base truncate" title={value}>{value}</p>
   </div>
 );
 

@@ -26,7 +26,7 @@ const Dashboard: React.FC<DashboardProps> = ({ vehicles, setView, onDelete, onEd
   }, {} as Record<string, number>);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-black text-slate-800 tracking-tight">System Overview</h2>
@@ -70,6 +70,7 @@ const Dashboard: React.FC<DashboardProps> = ({ vehicles, setView, onDelete, onEd
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-400 font-black border-b border-slate-100">
+                <th className="px-6 py-4">Visual</th>
                 <th className="px-6 py-4">Plate</th>
                 <th className="px-6 py-4">Vehicle Details</th>
                 <th className="px-6 py-4">Owner</th>
@@ -80,6 +81,17 @@ const Dashboard: React.FC<DashboardProps> = ({ vehicles, setView, onDelete, onEd
             <tbody className="divide-y divide-slate-100">
               {vehicles.map((v) => (
                 <tr key={v.id} className="hover:bg-slate-50/80 transition-colors group">
+                  <td className="px-6 py-4">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+                      {v.image ? (
+                        <img src={v.image} alt={v.plate} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                           <i className={`fa-solid ${getIconForType(v.type)} text-lg`}></i>
+                        </div>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-6 py-4">
                     <span className="font-mono font-black text-slate-800 bg-slate-100 px-2 py-1 rounded border border-slate-200 group-hover:bg-blue-50 group-hover:border-blue-200 group-hover:text-blue-700 transition-colors">
                       {v.plate}
@@ -119,7 +131,7 @@ const Dashboard: React.FC<DashboardProps> = ({ vehicles, setView, onDelete, onEd
               ))}
               {vehicles.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-20 text-center">
+                  <td colSpan={6} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center">
                       <div className="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 text-slate-300">
                         <i className="fa-solid fa-database text-2xl"></i>
@@ -136,6 +148,16 @@ const Dashboard: React.FC<DashboardProps> = ({ vehicles, setView, onDelete, onEd
       </div>
     </div>
   );
+};
+
+const getIconForType = (type: string) => {
+  switch(type) {
+    case 'Car': return 'fa-car';
+    case 'Truck': return 'fa-truck';
+    case 'Motorcycle': return 'fa-motorcycle';
+    case 'Bus': return 'fa-bus';
+    default: return 'fa-car-side';
+  }
 };
 
 const StatCard: React.FC<{ icon: string; color: string; label: string; value: number }> = ({ icon, color, label, value }) => {

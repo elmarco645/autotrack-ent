@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Vehicle, View } from '../types';
 
 interface AddVehicleProps {
@@ -18,8 +18,11 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ onAdd, setView, initialData, is
     year: '',
     color: '',
     owner: '',
-    history: ''
+    history: '',
+    image: ''
   });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (initialData) {
@@ -38,8 +41,28 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ onAdd, setView, initialData, is
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Image too large. Please select a photo under 2MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm(prev => ({ ...prev, image: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setForm(prev => ({ ...prev, image: '' }));
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   return (
-    <div className="max-w-3xl mx-auto animate-in slide-in-from-right duration-500">
+    <div className="max-w-4xl mx-auto animate-in slide-in-from-right duration-500 pb-12">
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-200">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -59,6 +82,55 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ onAdd, setView, initialData, is
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Image Upload Section */}
+          <div className="space-y-4">
+            <label className="flex items-center text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <i className="fa-solid fa-camera mr-2"></i>
+              Vehicle Photo Identification
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-1">
+                {form.image ? (
+                  <div className="relative group rounded-2xl overflow-hidden border-4 border-blue-50 aspect-video md:aspect-square bg-slate-100">
+                    <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
+                    <button 
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                    >
+                      <i className="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full aspect-video md:aspect-square rounded-2xl border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all flex flex-col items-center justify-center text-slate-400 space-y-2"
+                  >
+                    <i className="fa-solid fa-cloud-arrow-up text-3xl"></i>
+                    <span className="text-xs font-bold uppercase tracking-tighter">Upload Photo</span>
+                  </button>
+                )}
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleImageChange} 
+                  accept="image/*" 
+                  className="hidden" 
+                />
+              </div>
+              <div className="md:col-span-2 flex flex-col justify-center bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                <p className="text-sm font-bold text-slate-700 mb-1">Photo Requirements</p>
+                <ul className="text-xs text-slate-500 space-y-1 list-disc list-inside">
+                  <li>Clear view of the number plate</li>
+                  <li>Maximum file size: 2MB</li>
+                  <li>Accepted formats: JPG, PNG, WEBP</li>
+                  <li>High-resolution images preferred for AI verification</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <FormGroup 
               label="Number Plate" 
@@ -119,7 +191,7 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ onAdd, setView, initialData, is
             ></textarea>
           </div>
 
-          <div className="pt-8 flex flex-col sm:flex-row justify-end gap-4">
+          <div className="pt-8 flex flex-col sm:flex-row justify-end gap-4 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setView('dashboard')}

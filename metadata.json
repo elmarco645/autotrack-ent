@@ -1,0 +1,7 @@
+{
+  "name": "AutoTrack Pro",
+  "description": "Advanced vehicle registration and lookup system with real-time AI voice assistant integration.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

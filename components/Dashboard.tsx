@@ -7,9 +7,10 @@ interface DashboardProps {
   setView: (view: View) => void;
   onDelete: (id: string) => void;
   onEdit: (v: Vehicle) => void;
+  isAdmin: boolean;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ vehicles, setView, onDelete, onEdit }) => {
+const Dashboard: React.FC<DashboardProps> = ({ vehicles, setView, onDelete, onEdit, isAdmin }) => {
   const exportData = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(vehicles, null, 2));
     const downloadAnchorNode = document.createElement('a');
@@ -40,13 +41,15 @@ const Dashboard: React.FC<DashboardProps> = ({ vehicles, setView, onDelete, onEd
             <i className="fa-solid fa-download"></i>
             <span>Export Data</span>
           </button>
-          <button 
-            onClick={() => setView('add')}
-            className="flex items-center space-x-2 bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
-          >
-            <i className="fa-solid fa-plus"></i>
-            <span>New Vehicle</span>
-          </button>
+          {isAdmin && (
+            <button 
+              onClick={() => setView('add')}
+              className="flex items-center space-x-2 bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+            >
+              <i className="fa-solid fa-plus"></i>
+              <span>New Vehicle</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -75,7 +78,7 @@ const Dashboard: React.FC<DashboardProps> = ({ vehicles, setView, onDelete, onEd
                 <th className="px-6 py-4">Vehicle Details</th>
                 <th className="px-6 py-4">Owner</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                {isAdmin && <th className="px-6 py-4 text-right">Actions</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -109,35 +112,37 @@ const Dashboard: React.FC<DashboardProps> = ({ vehicles, setView, onDelete, onEd
                   <td className="px-6 py-4">
                     <span className="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold rounded uppercase tracking-tighter">Verified</span>
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end space-x-2">
-                      <button 
-                        onClick={() => onEdit(v)}
-                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                        title="Edit Record"
-                      >
-                        <i className="fa-solid fa-pen-to-square"></i>
-                      </button>
-                      <button 
-                        onClick={() => onDelete(v.id)}
-                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                        title="Delete Record"
-                      >
-                        <i className="fa-solid fa-trash-can"></i>
-                      </button>
-                    </div>
-                  </td>
+                  {isAdmin && (
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end space-x-2">
+                        <button 
+                          onClick={() => onEdit(v)}
+                          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                          title="Edit Record"
+                        >
+                          <i className="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button 
+                          onClick={() => onDelete(v.id)}
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                          title="Delete Record"
+                        >
+                          <i className="fa-solid fa-trash-can"></i>
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
               {vehicles.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-20 text-center">
+                  <td colSpan={isAdmin ? 6 : 5} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center">
                       <div className="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 text-slate-300">
                         <i className="fa-solid fa-database text-2xl"></i>
                       </div>
                       <p className="text-slate-400 font-medium">No records found in the current database.</p>
-                      <button onClick={() => setView('add')} className="mt-4 text-blue-600 text-sm font-bold hover:underline">Add first vehicle</button>
+                      {isAdmin && <button onClick={() => setView('add')} className="mt-4 text-blue-600 text-sm font-bold hover:underline">Add first vehicle</button>}
                     </div>
                   </td>
                 </tr>

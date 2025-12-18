@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
+import { User } from '../types';
 
 interface LoginProps {
-  onLogin: (username: string) => void;
+  onLogin: (user: User) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
@@ -12,9 +13,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Replicating document credentials: admin / admin123
+    
     if (username === 'admin' && password === 'admin123') {
-      onLogin(username);
+      onLogin({ username: 'Administrator', role: 'admin', isLoggedIn: true });
+    } else if (username === 'viewer' && password === 'viewer123') {
+      onLogin({ username: 'Registry Viewer', role: 'viewer', isLoggedIn: true });
     } else {
       setError('Invalid username or password');
     }
@@ -25,10 +28,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-100">
         <div className="text-center mb-8">
           <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i className="fa-solid fa-lock text-blue-600 text-2xl"></i>
+            <i className="fa-solid fa-shield-halved text-blue-600 text-2xl"></i>
           </div>
-          <h2 className="text-2xl font-bold text-slate-800">Admin Login</h2>
-          <p className="text-slate-500 mt-2">Access the AutoTrack management system</p>
+          <h2 className="text-2xl font-bold text-slate-800">System Access</h2>
+          <p className="text-slate-500 mt-2">Sign in to manage or view the registry</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -42,7 +45,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter username"
+                placeholder="admin or viewer"
                 className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                 required
               />
@@ -76,14 +79,19 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg hover:shadow-blue-200"
           >
-            Login to System
+            Authenticate
           </button>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-slate-100 text-center">
-          <p className="text-xs text-slate-400">
-            AutoTrack V2.0 System - Secure Database Management
-          </p>
+        <div className="mt-8 grid grid-cols-2 gap-3">
+          <div className="p-3 bg-slate-50 rounded-lg text-[10px] text-slate-400 text-center">
+            <p className="font-bold text-slate-500 mb-1">ADMIN ACCESS</p>
+            <p>admin / admin123</p>
+          </div>
+          <div className="p-3 bg-slate-50 rounded-lg text-[10px] text-slate-400 text-center">
+            <p className="font-bold text-slate-500 mb-1">VIEWER ACCESS</p>
+            <p>viewer / viewer123</p>
+          </div>
         </div>
       </div>
     </div>

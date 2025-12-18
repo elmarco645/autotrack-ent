@@ -31,90 +31,6 @@ const INITIAL_VEHICLES: Vehicle[] = [
     owner: 'Global Logistics Ltd',
     history: 'Heavy duty usage. Engine overhaul performed at 150k miles.',
     lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString()
-  },
-  {
-    id: '3',
-    plate: 'MTR442S',
-    vin: 'YAM77211054',
-    type: 'Motorcycle',
-    model: 'Yamaha MT-07',
-    year: '2022',
-    color: 'Tech Black',
-    owner: 'Sarah Miller',
-    history: 'Mint condition. Custom exhaust fitted.',
-    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString()
-  },
-  {
-    id: '4',
-    plate: 'BUS555K',
-    vin: 'MBZ11223344',
-    type: 'Bus',
-    model: 'Mercedes-Benz Tourismo',
-    year: '2019',
-    color: 'Silver',
-    owner: 'City Transit Authority',
-    history: 'Used for long-distance regional travel. Brake pads replaced last month.',
-    lastUpdated: new Date(Date.now() - 1000 * 60 * 30).toISOString()
-  },
-  {
-    id: '5',
-    plate: 'ELV101E',
-    vin: 'TSL55433211',
-    type: 'Car',
-    model: 'Tesla Model 3',
-    year: '2023',
-    color: 'Pearl White',
-    owner: 'Kevin Zhang',
-    history: 'New registration. Full self-driving package enabled.',
-    lastUpdated: new Date().toISOString()
-  },
-  {
-    id: '6',
-    plate: 'HGV778L',
-    vin: 'SCN88776655',
-    type: 'Truck',
-    model: 'Scania R500',
-    year: '2018',
-    color: 'Red',
-    owner: 'Road Haulers Co.',
-    history: 'Transmission issues reported in 2023, now resolved.',
-    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString()
-  },
-  {
-    id: '7',
-    plate: 'SPD202B',
-    vin: 'DCT44556677',
-    type: 'Motorcycle',
-    model: 'Ducati Panigale V4',
-    year: '2023',
-    color: 'Rosso Corsa',
-    owner: 'Marco Rossi',
-    history: 'Track use only. High performance maintenance schedule.',
-    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString()
-  },
-  {
-    id: '8',
-    plate: 'CTY889G',
-    vin: 'VLV22334455',
-    type: 'Bus',
-    model: 'Volvo B8RLE',
-    year: '2020',
-    color: 'Green/White',
-    owner: 'EcoBus Services',
-    history: 'Electric-hybrid conversion candidate.',
-    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString()
-  },
-  {
-    id: '9',
-    plate: 'OLD554J',
-    vin: 'FRD19670012',
-    type: 'Car',
-    model: 'Ford Mustang',
-    year: '1967',
-    color: 'Highland Green',
-    owner: 'Classic Car Club',
-    history: 'Full restoration completed in 2015. Museum quality.',
-    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString()
   }
 ];
 
@@ -132,6 +48,8 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(user ? 'dashboard' : 'login');
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
 
+  const isAdmin = user?.role === 'admin';
+
   useEffect(() => {
     localStorage.setItem('autotrack_data', JSON.stringify(vehicles));
   }, [vehicles]);
@@ -144,8 +62,7 @@ const App: React.FC = () => {
     }
   }, [user]);
 
-  const handleLogin = (username: string) => {
-    const newUser = { username, isLoggedIn: true };
+  const handleLogin = (newUser: User) => {
     setUser(newUser);
     setCurrentView('dashboard');
   };
@@ -156,6 +73,7 @@ const App: React.FC = () => {
   };
 
   const handleAddVehicle = (v: Omit<Vehicle, 'id' | 'lastUpdated'>) => {
+    if (!isAdmin) return;
     const newVehicle: Vehicle = { 
       ...v, 
       id: Math.random().toString(36).substr(2, 9),
@@ -166,6 +84,7 @@ const App: React.FC = () => {
   };
 
   const handleUpdateVehicle = (v: Vehicle) => {
+    if (!isAdmin) return;
     const updated = { ...v, lastUpdated: new Date().toISOString() };
     setVehicles(prev => prev.map(item => item.id === v.id ? updated : item));
     setEditingVehicle(null);
@@ -173,12 +92,14 @@ const App: React.FC = () => {
   };
 
   const handleDeleteVehicle = (id: string) => {
+    if (!isAdmin) return;
     if (window.confirm('Are you sure you want to delete this vehicle record?')) {
       setVehicles(prev => prev.filter(v => v.id !== id));
     }
   };
 
   const startEditing = (v: Vehicle) => {
+    if (!isAdmin) return;
     setEditingVehicle(v);
     setCurrentView('edit');
   };
@@ -197,22 +118,23 @@ const App: React.FC = () => {
           setView={setCurrentView} 
           onDelete={handleDeleteVehicle}
           onEdit={startEditing}
+          isAdmin={isAdmin}
         />;
       case 'search':
-        return <Search onSearch={searchVehicle} setView={setCurrentView} onEdit={startEditing} />;
+        return <Search onSearch={searchVehicle} setView={setCurrentView} onEdit={startEditing} isAdmin={isAdmin} />;
       case 'add':
-        return <AddVehicle onAdd={handleAddVehicle} setView={setCurrentView} />;
+        return isAdmin ? <AddVehicle onAdd={handleAddVehicle} setView={setCurrentView} /> : <Dashboard vehicles={vehicles} setView={setCurrentView} onDelete={handleDeleteVehicle} onEdit={startEditing} isAdmin={isAdmin} />;
       case 'edit':
-        return editingVehicle ? (
+        return editingVehicle && isAdmin ? (
           <AddVehicle 
             onAdd={(v) => handleUpdateVehicle({ ...v, id: editingVehicle.id })} 
             setView={setCurrentView} 
             initialData={editingVehicle}
             isEdit
           />
-        ) : <Dashboard vehicles={vehicles} setView={setCurrentView} onDelete={handleDeleteVehicle} onEdit={startEditing} />;
+        ) : <Dashboard vehicles={vehicles} setView={setCurrentView} onDelete={handleDeleteVehicle} onEdit={startEditing} isAdmin={isAdmin} />;
       default:
-        return <Dashboard vehicles={vehicles} setView={setCurrentView} onDelete={handleDeleteVehicle} onEdit={startEditing} />;
+        return <Dashboard vehicles={vehicles} setView={setCurrentView} onDelete={handleDeleteVehicle} onEdit={startEditing} isAdmin={isAdmin} />;
     }
   };
 
@@ -238,13 +160,15 @@ const App: React.FC = () => {
               <div className="hidden md:flex space-x-4 text-sm font-medium">
                 <button onClick={() => setCurrentView('dashboard')} className={`hover:text-blue-400 transition-colors ${currentView === 'dashboard' ? 'text-blue-400' : 'text-slate-300'}`}>Dashboard</button>
                 <button onClick={() => setCurrentView('search')} className={`hover:text-blue-400 transition-colors ${currentView === 'search' ? 'text-blue-400' : 'text-slate-300'}`}>Lookup</button>
-                <button onClick={() => setCurrentView('add')} className={`hover:text-blue-400 transition-colors ${currentView === 'add' ? 'text-blue-400' : 'text-slate-300'}`}>Register</button>
+                {isAdmin && (
+                  <button onClick={() => setCurrentView('add')} className={`hover:text-blue-400 transition-colors ${currentView === 'add' ? 'text-blue-400' : 'text-slate-300'}`}>Register</button>
+                )}
               </div>
               <div className="h-6 w-px bg-slate-700 hidden md:block"></div>
               <div className="flex items-center space-x-4">
                 <div className="text-right hidden sm:block">
                   <p className="text-xs font-bold">{user.username}</p>
-                  <p className="text-[10px] text-slate-400">System Administrator</p>
+                  <p className="text-[10px] text-slate-400">{isAdmin ? 'System Administrator' : 'Registry Viewer'}</p>
                 </div>
                 <button 
                   onClick={handleLogout}
@@ -268,7 +192,7 @@ const App: React.FC = () => {
           <p>© 2024 AutoTrack Systems. All rights reserved.</p>
           <div className="flex space-x-4 mt-2 md:mt-0">
             <span>Database Status: <span className="text-green-500 font-bold">Online</span></span>
-            <span>API Latency: 24ms</span>
+            <span>Mode: <span className="text-blue-400 font-bold">{user?.role?.toUpperCase() || 'ANONYMOUS'}</span></span>
           </div>
         </div>
       </footer>
@@ -277,6 +201,7 @@ const App: React.FC = () => {
         <LiveAssistant 
           onSearch={searchVehicle} 
           onAdd={handleAddVehicle}
+          userRole={user.role}
         />
       )}
     </div>

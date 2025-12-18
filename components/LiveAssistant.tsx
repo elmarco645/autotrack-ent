@@ -7,9 +7,10 @@ import { Vehicle } from '../types';
 interface LiveAssistantProps {
   onSearch: (plate: string) => Vehicle | undefined;
   onAdd: (v: Omit<Vehicle, 'id'>) => void;
+  userRole: 'admin' | 'viewer';
 }
 
-const LiveAssistant: React.FC<LiveAssistantProps> = ({ onSearch, onAdd }) => {
+const LiveAssistant: React.FC<LiveAssistantProps> = ({ onSearch, onAdd, userRole }) => {
   const [isActive, setIsActive] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [transcript, setTranscript] = useState<string[]>([]);
@@ -20,7 +21,8 @@ const LiveAssistant: React.FC<LiveAssistantProps> = ({ onSearch, onAdd }) => {
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const sessionRef = useRef<any>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const transcriptRef = useRef<string[]>([]);
+
+  const isAdmin = userRole === 'admin';
 
   const searchVehicleTool: FunctionDeclaration = {
     name: 'searchVehicle',
@@ -38,7 +40,7 @@ const LiveAssistant: React.FC<LiveAssistantProps> = ({ onSearch, onAdd }) => {
     name: 'addVehicle',
     parameters: {
       type: Type.OBJECT,
-      description: 'Register a new vehicle to the database.',
+      description: 'Register a new vehicle to the database. ONLY for Admins.',
       properties: {
         plate: { type: Type.STRING },
         vin: { type: Type.STRING },
@@ -104,26 +106,26 @@ const LiveAssistant: React.FC<LiveAssistantProps> = ({ onSearch, onAdd }) => {
             scriptProcessor.connect(audioContextRef.current!.destination);
           },
           onmessage: async (message: LiveServerMessage) => {
-            // Handle Transcription
             if (message.serverContent?.outputTranscription) {
-              const text = message.serverContent.outputTranscription.text;
-              setTranscript(prev => [...prev.slice(-4), `AI: ${text}`]);
+              setTranscript(prev => [...prev.slice(-4), `AI: ${message.serverContent!.outputTranscription!.text}`]);
             }
             if (message.serverContent?.inputTranscription) {
-              const text = message.serverContent.inputTranscription.text;
-              setTranscript(prev => [...prev.slice(-4), `You: ${text}`]);
+              setTranscript(prev => [...prev.slice(-4), `You: ${message.serverContent!.inputTranscription!.text}`]);
             }
 
-            // Handle Tools
             if (message.toolCall) {
               for (const fc of message.toolCall.functionCalls) {
-                let result = "Not executed";
+                let result = "Operation denied";
                 if (fc.name === 'searchVehicle') {
                   const v = onSearch(fc.args.plate as string);
                   result = v ? JSON.stringify(v) : "Vehicle not found";
                 } else if (fc.name === 'addVehicle') {
-                  onAdd(fc.args as any);
-                  result = "Vehicle registered successfully";
+                  if (isAdmin) {
+                    onAdd(fc.args as any);
+                    result = "Vehicle registered successfully";
+                  } else {
+                    result = "PERMISSION DENIED: You are logged in as a Viewer. Only Administrators can register vehicles.";
+                  }
                 }
                 
                 sessionPromise.then(session => {
@@ -138,7 +140,6 @@ const LiveAssistant: React.FC<LiveAssistantProps> = ({ onSearch, onAdd }) => {
               }
             }
 
-            // Handle Audio
             const audioBase64 = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
             if (audioBase64) {
               const ctx = outputAudioContextRef.current!;
@@ -172,7 +173,7 @@ const LiveAssistant: React.FC<LiveAssistantProps> = ({ onSearch, onAdd }) => {
           speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
           outputAudioTranscription: {},
           inputAudioTranscription: {},
-          systemInstruction: 'You are the AutoTrack Pro Voice Assistant. You help users search for vehicles or register new ones. You are efficient, professional, and friendly. When searching, if a vehicle is found, describe its key details. If not found, offer to help them register it.',
+          systemInstruction: `You are the AutoTrack Pro Voice Assistant. Current User Role: ${userRole}. ${isAdmin ? 'You have full permissions to search and register vehicles.' : 'You have VIEW ONLY permissions. You can help search for vehicles, but you must politely inform the user that their account does not have permission to register or edit records if they try.'} Be efficient, professional, and friendly.`,
           tools: [{ functionDeclarations: [searchVehicleTool, addVehicleTool] }]
         }
       });
@@ -195,7 +196,7 @@ const LiveAssistant: React.FC<LiveAssistantProps> = ({ onSearch, onAdd }) => {
               <div className="w-1 h-5 bg-blue-500 animate-bounce delay-150"></div>
               <div className="w-1 h-3 bg-blue-400 animate-bounce delay-75"></div>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Live AI Session</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Live Assistant</span>
           </div>
           <div className="text-[11px] space-y-2 opacity-80 min-h-[100px] flex flex-col justify-end">
             {transcript.map((line, idx) => (
@@ -224,12 +225,6 @@ const LiveAssistant: React.FC<LiveAssistantProps> = ({ onSearch, onAdd }) => {
           <i className="fa-solid fa-microphone-slash"></i>
         ) : (
           <i className="fa-solid fa-microphone"></i>
-        )}
-        
-        {!isActive && !isConnecting && (
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold animate-bounce shadow-md">
-            NEW
-          </span>
         )}
       </button>
     </div>

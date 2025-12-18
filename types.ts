@@ -15,6 +15,7 @@ export interface Vehicle {
 
 export interface User {
   username: string;
+  role: 'admin' | 'viewer';
   isLoggedIn: boolean;
 }
 

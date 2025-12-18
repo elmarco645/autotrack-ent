@@ -6,9 +6,10 @@ interface SearchProps {
   onSearch: (plate: string) => Vehicle | undefined;
   setView: (view: View) => void;
   onEdit: (v: Vehicle) => void;
+  isAdmin: boolean;
 }
 
-const Search: React.FC<SearchProps> = ({ onSearch, setView, onEdit }) => {
+const Search: React.FC<SearchProps> = ({ onSearch, setView, onEdit, isAdmin }) => {
   const [query, setQuery] = useState('');
   const [result, setResult] = useState<Vehicle | null | 'notfound'>(null);
 
@@ -74,14 +75,16 @@ const Search: React.FC<SearchProps> = ({ onSearch, setView, onEdit }) => {
           <p className="text-orange-700/70 mt-3 max-w-sm mx-auto font-medium">
             Plate <span className="font-mono font-black text-orange-900 underline">{query}</span> does not exist in our secure registry.
           </p>
-          <div className="mt-8 flex justify-center space-x-4">
-             <button 
-              onClick={() => setView('add')}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-orange-200"
-            >
-              Create New Record
-            </button>
-          </div>
+          {isAdmin && (
+            <div className="mt-8 flex justify-center space-x-4">
+               <button 
+                onClick={() => setView('add')}
+                className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-orange-200"
+              >
+                Create New Record
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -89,13 +92,15 @@ const Search: React.FC<SearchProps> = ({ onSearch, setView, onEdit }) => {
         <div className="bg-white rounded-3xl shadow-2xl border-2 border-blue-500 overflow-hidden relative animate-in zoom-in duration-300">
           {/* Action Header */}
           <div className="absolute top-6 right-6 flex space-x-3 z-20">
-            <button 
-              onClick={() => onEdit(result)}
-              className="bg-white/90 backdrop-blur shadow-lg text-blue-600 w-12 h-12 rounded-xl flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all"
-              title="Edit Record"
-            >
-              <i className="fa-solid fa-pen"></i>
-            </button>
+            {isAdmin && (
+              <button 
+                onClick={() => onEdit(result)}
+                className="bg-white/90 backdrop-blur shadow-lg text-blue-600 w-12 h-12 rounded-xl flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all"
+                title="Edit Record"
+              >
+                <i className="fa-solid fa-pen"></i>
+              </button>
+            )}
             <button className="bg-white/90 backdrop-blur shadow-lg text-slate-400 w-12 h-12 rounded-xl flex items-center justify-center hover:bg-slate-100 transition-all">
               <i className="fa-solid fa-print"></i>
             </button>

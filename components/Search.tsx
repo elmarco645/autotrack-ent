@@ -1,17 +1,29 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Vehicle, View } from '../types';
 
 interface SearchProps {
-  onSearch: (plate: string) => Vehicle | undefined;
+  onSearch: (query: string) => Vehicle | undefined;
   setView: (view: View) => void;
   onEdit: (v: Vehicle) => void;
   isAdmin: boolean;
+  userRole: 'admin' | 'viewer';
+  initialSearch: string | null;
+  onClearTrigger: () => void;
 }
 
-const Search: React.FC<SearchProps> = ({ onSearch, setView, onEdit, isAdmin }) => {
+const Search: React.FC<SearchProps> = ({ onSearch, setView, onEdit, isAdmin, userRole, initialSearch, onClearTrigger }) => {
   const [query, setQuery] = useState('');
   const [result, setResult] = useState<Vehicle | null | 'notfound'>(null);
+
+  useEffect(() => {
+    if (initialSearch) {
+      setQuery(initialSearch);
+      const found = onSearch(initialSearch);
+      setResult(found || 'notfound');
+      onClearTrigger();
+    }
+  }, [initialSearch, onSearch, onClearTrigger]);
 
   const handleSearch = () => {
     if (!query.trim()) return;
@@ -24,6 +36,8 @@ const Search: React.FC<SearchProps> = ({ onSearch, setView, onEdit, isAdmin }) =
     setResult(null);
   };
 
+  const isViewer = userRole === 'viewer';
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-bottom duration-500 pb-12">
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-200 relative overflow-hidden">
@@ -32,19 +46,24 @@ const Search: React.FC<SearchProps> = ({ onSearch, setView, onEdit, isAdmin }) =
         </div>
         
         <div className="relative z-10">
-          <h2 className="text-3xl font-black text-slate-800 tracking-tight mb-2">Registry Lookup</h2>
-          <p className="text-slate-500 mb-8 font-medium">Verify vehicle credentials and history instantly.</p>
+          <h2 className="text-3xl font-black text-slate-800 tracking-tight mb-2">
+            {isViewer ? 'VIN Verification' : 'Registry Lookup'}
+          </h2>
+          <p className="text-slate-500 mb-8 font-medium">
+            {isViewer ? 'Identify vehicles using the unique 17-character VIN.' : 'Verify vehicle credentials and history instantly by Plate or VIN.'}
+          </p>
           
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <i className="fa-solid fa-hashtag absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <i className={`fa-solid ${isViewer ? 'fa-hashtag' : 'fa-id-card'} absolute left-4 top-1/2 -translate-y-1/2 text-slate-400`}></i>
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value.toUpperCase())}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Enter Plate Number..."
+                placeholder={isViewer ? "Enter VIN Number..." : "Enter Plate or VIN..."}
                 className="w-full pl-12 pr-4 py-5 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-mono font-black text-xl tracking-widest uppercase"
+                maxLength={isViewer ? 17 : undefined}
               />
               {query && (
                 <button 
@@ -60,7 +79,7 @@ const Search: React.FC<SearchProps> = ({ onSearch, setView, onEdit, isAdmin }) =
               className="bg-slate-900 hover:bg-black text-white px-10 py-5 rounded-2xl font-black transition-all shadow-xl shadow-slate-200 flex items-center justify-center space-x-3 group"
             >
               <i className="fa-solid fa-search group-hover:scale-110 transition-transform"></i>
-              <span>Lookup</span>
+              <span>{isViewer ? 'Verify VIN' : 'Lookup'}</span>
             </button>
           </div>
         </div>
@@ -71,9 +90,9 @@ const Search: React.FC<SearchProps> = ({ onSearch, setView, onEdit, isAdmin }) =
           <div className="bg-orange-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-orange-600">
             <i className="fa-solid fa-ghost text-4xl"></i>
           </div>
-          <h3 className="text-2xl font-black text-orange-800 tracking-tight">Zero Matches Found</h3>
+          <h3 className="text-2xl font-black text-orange-800 tracking-tight">Access Denied: Record Not Found</h3>
           <p className="text-orange-700/70 mt-3 max-w-sm mx-auto font-medium">
-            Plate <span className="font-mono font-black text-orange-900 underline">{query}</span> does not exist in our secure registry.
+            Identifier <span className="font-mono font-black text-orange-900 underline">{query}</span> does not match any official records in our secure registry.
           </p>
           {isAdmin && (
             <div className="mt-8 flex justify-center space-x-4">

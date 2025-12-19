@@ -47,6 +47,7 @@ const App: React.FC = () => {
 
   const [currentView, setCurrentView] = useState<View>(user ? 'dashboard' : 'login');
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+  const [searchTrigger, setSearchTrigger] = useState<string | null>(null);
 
   const isAdmin = user?.role === 'admin';
 
@@ -70,6 +71,11 @@ const App: React.FC = () => {
   const handleLogout = () => {
     setUser(null);
     setCurrentView('login');
+  };
+
+  const handleQuickSearch = (query: string) => {
+    setSearchTrigger(query);
+    setCurrentView('search');
   };
 
   const handleAddVehicle = (v: Omit<Vehicle, 'id' | 'lastUpdated'>) => {
@@ -104,8 +110,13 @@ const App: React.FC = () => {
     setCurrentView('edit');
   };
 
-  const searchVehicle = useCallback((plate: string) => {
-    return vehicles.find(v => v.plate.toUpperCase().trim() === plate.toUpperCase().trim());
+  const searchVehicle = useCallback((query: string) => {
+    const upperQuery = query.toUpperCase().trim();
+    // Search by both plate and VIN for maximum flexibility in lookup engine
+    return vehicles.find(v => 
+      v.plate.toUpperCase().trim() === upperQuery || 
+      v.vin.toUpperCase().trim() === upperQuery
+    );
   }, [vehicles]);
 
   const renderContent = () => {
@@ -118,12 +129,24 @@ const App: React.FC = () => {
           setView={setCurrentView} 
           onDelete={handleDeleteVehicle}
           onEdit={startEditing}
+          onQuickSearch={handleQuickSearch}
           isAdmin={isAdmin}
+          user={user}
         />;
       case 'search':
-        return <Search onSearch={searchVehicle} setView={setCurrentView} onEdit={startEditing} isAdmin={isAdmin} />;
+        return (
+          <Search 
+            onSearch={searchVehicle} 
+            setView={setCurrentView} 
+            onEdit={startEditing} 
+            isAdmin={isAdmin} 
+            userRole={user.role}
+            initialSearch={searchTrigger} 
+            onClearTrigger={() => setSearchTrigger(null)} 
+          />
+        );
       case 'add':
-        return isAdmin ? <AddVehicle onAdd={handleAddVehicle} setView={setCurrentView} /> : <Dashboard vehicles={vehicles} setView={setCurrentView} onDelete={handleDeleteVehicle} onEdit={startEditing} isAdmin={isAdmin} />;
+        return isAdmin ? <AddVehicle onAdd={handleAddVehicle} setView={setCurrentView} /> : <Dashboard vehicles={vehicles} setView={setCurrentView} onDelete={handleDeleteVehicle} onEdit={startEditing} onQuickSearch={handleQuickSearch} isAdmin={isAdmin} user={user!} />;
       case 'edit':
         return editingVehicle && isAdmin ? (
           <AddVehicle 
@@ -132,9 +155,9 @@ const App: React.FC = () => {
             initialData={editingVehicle}
             isEdit
           />
-        ) : <Dashboard vehicles={vehicles} setView={setCurrentView} onDelete={handleDeleteVehicle} onEdit={startEditing} isAdmin={isAdmin} />;
+        ) : <Dashboard vehicles={vehicles} setView={setCurrentView} onDelete={handleDeleteVehicle} onEdit={startEditing} onQuickSearch={handleQuickSearch} isAdmin={isAdmin} user={user!} />;
       default:
-        return <Dashboard vehicles={vehicles} setView={setCurrentView} onDelete={handleDeleteVehicle} onEdit={startEditing} isAdmin={isAdmin} />;
+        return <Dashboard vehicles={vehicles} setView={setCurrentView} onDelete={handleDeleteVehicle} onEdit={startEditing} onQuickSearch={handleQuickSearch} isAdmin={isAdmin} user={user!} />;
     }
   };
 
@@ -158,7 +181,9 @@ const App: React.FC = () => {
           {user && (
             <div className="flex items-center space-x-6">
               <div className="hidden md:flex space-x-4 text-sm font-medium">
-                <button onClick={() => setCurrentView('dashboard')} className={`hover:text-blue-400 transition-colors ${currentView === 'dashboard' ? 'text-blue-400' : 'text-slate-300'}`}>Dashboard</button>
+                <button onClick={() => setCurrentView('dashboard')} className={`hover:text-blue-400 transition-colors ${currentView === 'dashboard' ? 'text-blue-400' : 'text-slate-300'}`}>
+                  {isAdmin ? 'Dashboard' : 'Verify'}
+                </button>
                 <button onClick={() => setCurrentView('search')} className={`hover:text-blue-400 transition-colors ${currentView === 'search' ? 'text-blue-400' : 'text-slate-300'}`}>Lookup</button>
                 {isAdmin && (
                   <button onClick={() => setCurrentView('add')} className={`hover:text-blue-400 transition-colors ${currentView === 'add' ? 'text-blue-400' : 'text-slate-300'}`}>Register</button>
